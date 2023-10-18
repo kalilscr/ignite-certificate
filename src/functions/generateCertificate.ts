@@ -1,11 +1,11 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { document } from "../utils/dynamodbClient";
-import { compile } from "handlebars";
+//import { compile } from "handlebars";
 //import dayjs from "dayjs";
-import { join } from "path";
-import { readFileSync } from "fs";
+//import { join } from "path";
+//import { readFileSync } from "fs";
 //import chromium from "chrome-aws-lambda";
-import { S3 } from "aws-sdk";
+//import { S3 } from "aws-sdk";
 
 interface ICreateCertificate {
   id: string;
