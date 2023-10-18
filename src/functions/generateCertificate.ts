@@ -1,11 +1,12 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { document } from "../utils/dynamodbClient";
-//import { compile } from "handlebars";
-//import dayjs from "dayjs";
-//import { join } from "path";
-//import { readFileSync } from "fs";
-//import chromium from "chrome-aws-lambda";
-//import { S3 } from "aws-sdk";
+import { compile } from "handlebars";
+import dayjs from "dayjs";
+import { join } from "path";
+import { readFileSync } from "fs";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
+import { S3 } from "aws-sdk";
 
 interface ICreateCertificate {
   id: string;
@@ -21,13 +22,13 @@ interface ITemplate {
   date: string;
 }
 
-// const compileTemplate = async (data: ITemplate) => {
-//   const filePath = join(process.cwd(), "src", "templates", "certificate.hbs");
+const compileTemplate = async (data: ITemplate) => {
+  const filePath = join(process.cwd(), "src", "templates", "certificate.hbs"); // navega da raiz do projeto até o certificate.hbs
 
-//   const html = readFileSync(filePath, "utf8");
+  const html = readFileSync(filePath, "utf8");
 
-//   return compile(html)(data);
-// };
+  return compile(html)(data);
+};
 
 export const handler: APIGatewayProxyHandler = async (event) => {
   const { id, name, grade } = JSON.parse(event.body) as ICreateCertificate;
@@ -58,62 +59,56 @@ export const handler: APIGatewayProxyHandler = async (event) => {
       .promise();
   }
 
-  //   const medalPath = join(process.cwd(), "src", "templates", "selo.png");
-  //   const medal = readFileSync(medalPath, "base64");
+  const medalPath = join(process.cwd(), "src", "templates", "selo.png");
+  const medal = readFileSync(medalPath, "base64");
 
-  //   const data: ITemplate = {
-  //     name,
-  //     id,
-  //     grade,
-  //     date: dayjs().format("DD/MM/YYYY"),
-  //     medal,
-  //   };
+  const data: ITemplate = {
+    name,
+    id,
+    grade,
+    date: dayjs().format("DD/MM/YYYY"),
+    medal,
+  };
 
-  //   const content = await compileTemplate(data);
+  const content = await compileTemplate(data);
 
-  //   const browser = await chromium.puppeteer.launch({
-  //     args: chromium.args,
-  //     defaultViewport: chromium.defaultViewport,
-  //     executablePath: await chromium.executablePath,
-  //   });
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath(),
+  });
 
-  //   const page = await browser.newPage();
+  const page = await browser.newPage();
 
-  //   await page.setContent(content);
-  //   const pdf = await page.pdf({
-  //     format: "a4",
-  //     landscape: true,
-  //     printBackground: true,
-  //     preferCSSPageSize: true,
-  //     path: process.env.IS_OFFLINE ? "./certificate.pdf" : null,
-  //   });
+  await page.setContent(content);
 
-  //   await browser.close();
+  const pdf = await page.pdf({
+    format: "a4",
+    landscape: true,
+    printBackground: true,
+    preferCSSPageSize: true,
+    path: process.env.IS_OFFLINE ? "./certificate.pdf" : null,
+  });
 
-  //  const s3 = new S3();
+  await browser.close();
 
-  // await s3
-  //   .createBucket({
-  //     Bucket: 'certificadoignite2021',
-  //   })
-  //   .promise();
+  const s3 = new S3();
 
-  //   await s3
-  //     .putObject({
-  //       Bucket: "certificadoignite2021",
-  //       Key: `${id}.pdf`,
-  //       ACL: "public-read",
-  //       Body: pdf,
-  //       ContentType: "application/pdf",
-  //     })
-  //     .promise();
+  await s3
+    .putObject({
+      Bucket: "ignite-serverless-cert",
+      Key: `${id}.pdf`,
+      ACL: "public-read-write",
+      Body: pdf,
+      ContentType: "application/pdf",
+    })
+    .promise();
 
   return {
     statusCode: 201,
     body: JSON.stringify({
-      message: response.Items[0],
-      //   message: "Certificado criado com sucesso",
-      //   url: `https://certificadoignite2021.s3.amazonaws.com/${id}.pdf`,
+      message: "Certificado criado com sucesso",
+      url: `https://ignite-serverless-cert.s3.amazonaws.com/${id}.pdf`,
     }),
   };
 };

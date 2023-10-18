@@ -9,3 +9,5 @@ jspm_packages
 .esbuild
 
 .dynamodb
+
+yarn-error.log

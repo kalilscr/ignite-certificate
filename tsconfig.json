@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["ESNext"],
+    "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "noUnusedLocals": true,
     "noUnusedParameters": true,

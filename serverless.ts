@@ -59,6 +59,7 @@ const serverlessConfiguration: AWS = {
       define: { "require.resolve": undefined },
       platform: "node",
       concurrency: 10,
+      external: ["@sparticuz/chromium"],
     },
     dynamodb: {
       stages: ["dev", "local"],
