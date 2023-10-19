@@ -10,7 +10,7 @@ const serverlessConfiguration: AWS = {
   ],
   provider: {
     name: "aws",
-    runtime: "nodejs14.x",
+    runtime: "nodejs18.x",
     region: "us-east-1",
     apiGateway: {
       minimumCompressionSize: 1024,
@@ -33,6 +33,7 @@ const serverlessConfiguration: AWS = {
       },
     ],
   },
+  package: { individually: false, include: ["./src/templates/**"] },
   // import the function via paths
   functions: {
     generateCertificate: {
@@ -60,14 +61,17 @@ const serverlessConfiguration: AWS = {
       ],
     },
   },
-  package: { individually: true },
   custom: {
     esbuild: {
       bundle: true,
       minify: false,
       sourcemap: true,
-      exclude: ["aws-sdk"],
-      target: "node14",
+      // exclude: [
+      //   "@aws-sdk/client-dynamodb",
+      //   "@aws-sdk/client-s3",
+      //   "@aws-sdk/lib-dynamodb",
+      // ],
+      target: "node18",
       define: { "require.resolve": undefined },
       platform: "node",
       concurrency: 10,
