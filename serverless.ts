@@ -66,16 +66,12 @@ const serverlessConfiguration: AWS = {
       bundle: true,
       minify: false,
       sourcemap: true,
-      // exclude: [
-      //   "@aws-sdk/client-dynamodb",
-      //   "@aws-sdk/client-s3",
-      //   "@aws-sdk/lib-dynamodb",
-      // ],
+      exclude: ["aws-sdk"],
       target: "node18",
       define: { "require.resolve": undefined },
       platform: "node",
       concurrency: 10,
-      external: ["@sparticuz/chromium"],
+      external: ["playwright-aws-lambda"],
     },
     dynamodb: {
       stages: ["dev", "local"],

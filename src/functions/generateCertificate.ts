@@ -4,11 +4,10 @@ import { compile } from "handlebars";
 import dayjs from "dayjs";
 import { join } from "path";
 import { readFileSync } from "fs";
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
 import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import * as playwright from "playwright-aws-lambda";
 
 interface ICreateCertificate {
   id: string;
@@ -74,20 +73,14 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
   const content = await compileTemplate(data);
 
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath(),
-    headless: true,
-    ignoreHTTPSErrors: true,
-  });
+  const browser = await playwright.launchChromium();
 
   const page = await browser.newPage();
 
   await page.setContent(content);
 
   const pdf = await page.pdf({
-    format: "a4",
+    format: "A4",
     landscape: true,
     printBackground: true,
     preferCSSPageSize: true,

@@ -18,10 +18,11 @@
     "@aws-sdk/lib-dynamodb": "^3.431.0",
     "@middy/core": "^3.4.0",
     "@middy/http-json-body-parser": "^3.4.0",
-    "@sparticuz/chromium": "^117.0.0",
     "dayjs": "^1.11.10",
     "handlebars": "^4.7.8",
-    "puppeteer-core": "^21.3.8"
+    "playwright": "^1.39.0",
+    "playwright-aws-lambda": "^0.10.0",
+    "playwright-core": "^1.39.0"
   },
   "devDependencies": {
     "@serverless/typescript": "^3.0.0",
