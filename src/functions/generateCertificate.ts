@@ -8,6 +8,8 @@ import { QueryCommand } from "@aws-sdk/client-dynamodb";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import * as playwright from "playwright-aws-lambda";
+//import "dotenv/config";
+//import { spawnSync } from "child_process";
 
 interface ICreateCertificate {
   id: string;
@@ -73,9 +75,17 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
   const content = await compileTemplate(data);
 
-  const browser = await playwright.launchChromium();
+  // spawnSync("npx", ["playwright", "install", "chromium"]);
+  // spawnSync("npx", ["playwright", "install"]);
+  // spawnSync("npx", ["playwright", "install-deps"]);
+
+  const browser = await playwright.launchChromium({ headless: true });
 
   const page = await browser.newPage();
+
+  // await playwright.loadFont(
+  //   "https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&family=Roboto:wght@900&display=swap"
+  // );
 
   await page.setContent(content);
 
@@ -86,8 +96,6 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     preferCSSPageSize: true,
     path: process.env.IS_OFFLINE ? "./certificate.pdf" : null,
   });
-
-  await browser.close();
 
   const s3Client = new S3Client({});
 
@@ -100,6 +108,8 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   });
 
   await s3Client.send(putObject);
+
+  await browser.close();
 
   return {
     statusCode: 201,

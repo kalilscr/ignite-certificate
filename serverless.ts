@@ -3,6 +3,7 @@ import type { AWS } from "@serverless/typescript";
 const serverlessConfiguration: AWS = {
   service: "ignite-certificate",
   frameworkVersion: "3",
+  useDotenv: true,
   plugins: [
     "serverless-esbuild",
     "serverless-dynamodb-local",
@@ -19,24 +20,33 @@ const serverlessConfiguration: AWS = {
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
+      // IS_LOCAL: "${env:IS_LOCAL}",
+      MY_APP_AWS_ACCESS_KEY_ID: "${env:MY_APP_AWS_ACCESS_KEY_ID}",
+      MY_APP_AWS_SECRET_ACCESS_KEY: "${env:MY_APP_AWS_SECRET_ACCESS_KEY}",
+      REGION: "${env:REGION}",
     },
-    iamRoleStatements: [
-      {
-        Effect: "Allow",
-        Action: ["dynamodb:*"],
-        Resource: ["*"],
+    iam: {
+      role: {
+        statements: [
+          {
+            Effect: "Allow",
+            Action: ["dynamodb:*"],
+            Resource: ["*"],
+          },
+          {
+            Effect: "Allow",
+            Action: ["s3:*"],
+            Resource: ["*"],
+          },
+        ],
       },
-      {
-        Effect: "Allow",
-        Action: ["s3:*"],
-        Resource: ["*"],
-      },
-    ],
+    },
   },
-  package: { individually: false, include: ["./src/templates/**"] },
+  package: { individually: false, patterns: ["./src/templates/**"] },
   // import the function via paths
   functions: {
     generateCertificate: {
+      //timeout: 120,
       handler: "src/functions/generateCertificate.handler",
       events: [
         {
@@ -66,17 +76,22 @@ const serverlessConfiguration: AWS = {
       bundle: true,
       minify: false,
       sourcemap: true,
-      exclude: ["aws-sdk"],
+      exclude: ["@aws-sdk"],
       target: "node18",
       define: { "require.resolve": undefined },
       platform: "node",
       concurrency: 10,
-      external: ["playwright-aws-lambda"],
+      external: [
+        "playwright-aws-lambda",
+        "@aws-sdk/client-dynamodb",
+        "@aws-sdk/lib-dynamodb",
+        "@aws-sdk/client-s3",
+      ],
     },
     dynamodb: {
       stages: ["dev", "local"],
       start: {
-        port: 8000,
+        port: 8080,
         inMemory: true,
         migrate: true,
       },

@@ -11,3 +11,5 @@ jspm_packages
 .dynamodb
 
 yarn-error.log
+
+.env
